@@ -27,7 +27,7 @@ class HomeView extends GetView<HomeController> {
               bool isProtected = settingsBox.get('biometricEnabled', defaultValue: false);
 
               if (isProtected && !kIsWeb) {
-                Get.toNamed(Routes.LOCK);
+                Get.toNamed(Routes.LOCK, arguments: Routes.WATCHLIST);
               } else {
                 Get.toNamed(Routes.WATCHLIST);
               }

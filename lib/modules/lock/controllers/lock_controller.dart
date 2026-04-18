@@ -15,8 +15,13 @@ class LockController extends GetxController {
     isAuthenticating.value = false;
 
     if (authenticated) {
-      // Uses Named Routing instead of the deleted screen!
-      Get.offAllNamed(Routes.DASHBOARD); 
+      final destination = Get.arguments;
+
+      if (destination is String && destination.isNotEmpty) {
+        Get.offNamed(destination);
+      } else {
+        Get.offAllNamed(Routes.DASHBOARD);
+      }
     } else {
       Get.snackbar('Auth Error', 'Authentication failed or was canceled.');
     }
