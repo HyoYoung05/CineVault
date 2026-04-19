@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/details_controller.dart';
+import '../../../widgets/responsive_app_bar_title.dart';
 
 class DetailsView extends GetView<DetailsController> {
   const DetailsView({super.key});
@@ -14,7 +15,9 @@ class DetailsView extends GetView<DetailsController> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(movie['title'] ?? 'Movie Details'),
+        title: ResponsiveAppBarTitle(
+          movie['title'] ?? 'Movie Details',
+        ),
       ),
       
       // --- THE NEW FLOATING ACTION BUTTON ---

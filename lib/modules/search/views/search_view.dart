@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/search_controller.dart';
 import '../../../app/routes/app_routes.dart';
+import '../../../widgets/responsive_app_bar_title.dart';
 
 class SearchView extends GetView<SearchModuleController> {
   SearchView({super.key});
@@ -19,7 +20,7 @@ class SearchView extends GetView<SearchModuleController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Search CineVault'),
+        title: const ResponsiveAppBarTitle('Search CineVault'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Get.back(),
@@ -34,7 +35,7 @@ class SearchView extends GetView<SearchModuleController> {
               child: TextFormField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  hintText: 'Search movies...',
+                  hintText: 'Search movies and TV shows...',
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.search),
                     onPressed: _onSearchSubmit,
@@ -56,6 +57,7 @@ class SearchView extends GetView<SearchModuleController> {
                 separatorBuilder: (context, index) => const Divider(height: 1), // Adds a subtle line between items
                 itemBuilder: (context, index) {
                   var movie = controller.searchResults[index];
+                  final isTvShow = movie['media_type'] == 'tv';
                   
                   // Extract the image path safely
                   String? path = movie['poster_path'];
@@ -84,8 +86,10 @@ class SearchView extends GetView<SearchModuleController> {
                     ),
                     
                     title: Text(movie['title'] ?? 'Unknown'),
-                    // Optional: Adds the release year under the title for a better layout
-                    subtitle: Text(movie['release_date'] ?? 'TBA', style: const TextStyle(color: Colors.grey)), 
+                    subtitle: Text(
+                      '${isTvShow ? 'TV Show' : 'Movie'} - ${movie['release_date'] ?? 'TBA'}',
+                      style: const TextStyle(color: Colors.grey),
+                    ), 
                     
                     onTap: () => Get.toNamed(Routes.DETAILS, arguments: movie),
                   );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../../app/constants/app_constants.dart';
+import '../../../app/utils/app_snackbar.dart';
 import '../../../data/models/movie_model.dart';
 
 class DetailsController extends GetxController {
@@ -40,14 +41,19 @@ class DetailsController extends GetxController {
         overview: movie['overview'] ?? 'No overview available.',
         releaseDate: movie['release_date'] ?? 'TBA',
         voteAverage: movie['vote_average'] ?? 'N/A',
+        isArchived: false,
+        mediaType: movie['media_type'] == 'tv' ? 'tv' : 'movie',
       );
 
       watchlistBox.put(item.id, item);
       isSaved.value = true;
       
-      Get.snackbar('Saved to Vault', '${item.title} added to your Watchlist.');
+      AppSnackbar.show(
+        'Saved to Vault',
+        '${item.title} added to your Watchlist.',
+      );
     } catch (e) {
-      Get.snackbar('Error', 'Failed to save movie: $e');
+      AppSnackbar.show('Error', 'Failed to save movie: $e', isError: true);
     }
   }
 
@@ -58,15 +64,12 @@ class DetailsController extends GetxController {
       watchlistBox.delete(movieId);
       isSaved.value = false;
       
-      Get.snackbar(
+      AppSnackbar.show(
         'Removed from Vault', 
         '${movie['title']} removed from your Watchlist.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFF1E1E1E),
-        colorText: const Color(0xFFFFFFFF),
       );
     } catch (e) {
-      Get.snackbar('Error', 'Failed to remove movie: $e');
+      AppSnackbar.show('Error', 'Failed to remove movie: $e', isError: true);
     }
   }
 }

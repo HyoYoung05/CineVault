@@ -23,14 +23,16 @@ class MovieItemAdapter extends TypeAdapter<MovieItem> {
       overview: fields[3] as String,
       releaseDate: fields[4] as String,
       voteAverage: fields[5] as dynamic,
-      isWatched: fields[6] as bool,
+      isWatched: fields[6] == null ? false : fields[6] as bool,
+      isArchived: fields[7] == null ? false : fields[7] as bool,
+      mediaType: fields[8] == null ? 'movie' : fields[8] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, MovieItem obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -44,7 +46,11 @@ class MovieItemAdapter extends TypeAdapter<MovieItem> {
       ..writeByte(5)
       ..write(obj.voteAverage)
       ..writeByte(6)
-      ..write(obj.isWatched);
+      ..write(obj.isWatched)
+      ..writeByte(7)
+      ..write(obj.isArchived)
+      ..writeByte(8)
+      ..write(obj.mediaType);
   }
 
   @override

@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import '../../../../data/services/movie_service.dart';
+import '../../../app/utils/app_snackbar.dart';
 
 class SearchModuleController extends GetxController {
   var isSearching = false.obs;
@@ -12,7 +13,7 @@ class SearchModuleController extends GetxController {
       var results = await MovieService.searchMovies(query);
       searchResults.assignAll(results);
     } catch (e) {
-      Get.snackbar('Search Error', 'Failed to fetch results: $e');
+      AppSnackbar.show('Search Error', 'Failed to fetch results: $e', isError: true);
     } finally {
       isSearching(false);
     }

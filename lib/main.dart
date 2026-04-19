@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:get/get.dart';
 
 import 'data/models/movie_model.dart'; 
+import 'app/constants/app_constants.dart';
 import 'app/theme/app_theme.dart';
 import 'app/routes/app_pages.dart';
 
@@ -27,16 +28,41 @@ void main() async {
 class CineVaultApp extends StatelessWidget {
   const CineVaultApp({super.key});
 
+  ThemeMode _themeModeFromSetting(String value) {
+    switch (value) {
+      case 'light':
+        return ThemeMode.light;
+      case 'dark':
+      case 'oled':
+        return ThemeMode.dark;
+      case 'system':
+      default:
+        return ThemeMode.system;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      title: 'CineVault',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme, 
-      
-      // Upgrade to Named Routing!
-      initialRoute: AppPages.INITIAL,
-      getPages: AppPages.routes,
+    final settingsBox = Hive.box(AppConstants.settingsBox);
+
+    return ValueListenableBuilder(
+      valueListenable: settingsBox.listenable(),
+      builder: (context, box, _) {
+        final appearance = box.get(
+          AppConstants.themeAppearanceKey,
+          defaultValue: 'dark',
+        ) as String;
+
+        return GetMaterialApp(
+          title: 'CineVault',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: appearance == 'oled' ? AppTheme.oledTheme : AppTheme.darkTheme,
+          themeMode: _themeModeFromSetting(appearance),
+          initialRoute: AppPages.INITIAL,
+          getPages: AppPages.routes,
+        );
+      },
     );
   }
 }

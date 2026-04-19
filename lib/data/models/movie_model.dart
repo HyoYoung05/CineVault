@@ -26,6 +26,12 @@ class MovieItem extends HiveObject {
   @HiveField(6)
   bool isWatched; // Field for your "Eye" function status
 
+  @HiveField(7)
+  bool isArchived;
+
+  @HiveField(8)
+  final String mediaType;
+
   MovieItem({
     required this.id,
     required this.title,
@@ -34,5 +40,7 @@ class MovieItem extends HiveObject {
     required this.releaseDate,
     required this.voteAverage,
     this.isWatched = false,
+    this.isArchived = false,
+    this.mediaType = 'movie',
   });
 }
