@@ -6,6 +6,7 @@ import '../../../app/constants/app_constants.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../app/utils/app_snackbar.dart';
 import '../../../data/models/movie_model.dart';
+import '../../../data/services/auth_service.dart';
 
 enum VaultSortPreference { recentlyAdded, titleAZ, releaseDate, watchedFirst, unwatchedFirst }
 enum DefaultHomeSectionPreference { browse, trending, popular, updated, genre }
@@ -14,6 +15,7 @@ enum ThemeAppearancePreference { system, dark, light, oled }
 enum DefaultStartupScreenPreference { home, vault }
 
 class SettingsController extends GetxController {
+  final AuthService _authService = AuthService();
   var isBiometricEnabled = false.obs;
   var vaultSort = VaultSortPreference.recentlyAdded.obs;
   var defaultHomeSection = DefaultHomeSectionPreference.trending.obs;
@@ -48,7 +50,19 @@ class SettingsController extends GetxController {
     );
   }
 
-  void toggleBiometric(bool value) {
+  Future<void> toggleBiometric(bool value) async {
+    if (!value && isBiometricEnabled.value) {
+      final authenticated = await _authService.unlockVault();
+      if (!authenticated) {
+        AppSnackbar.show(
+          'Authentication Required',
+          'Verify your identity to disable biometric lock.',
+          isError: true,
+        );
+        return;
+      }
+    }
+
     isBiometricEnabled.value = value;
     settingsBox.put(AppConstants.biometricEnabledKey, value);
 

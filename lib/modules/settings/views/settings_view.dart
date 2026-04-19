@@ -55,32 +55,6 @@ class SettingsView extends GetView<SettingsController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _sectionTitle('Security'),
-                Obx(
-                  () => SwitchListTile(
-                    title: const Text('Enable Biometric Lock'),
-                    subtitle: const Text(
-                      'Require fingerprint or face ID to access your private vault.',
-                    ),
-                    value: controller.isBiometricEnabled.value,
-                    onChanged: controller.toggleBiometric,
-                    secondary: Icon(
-                      Icons.fingerprint,
-                      color: controller.isBiometricEnabled.value
-                          ? Colors.deepPurpleAccent
-                          : Colors.grey,
-                    ),
-                    activeThumbColor: Colors.deepPurpleAccent,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Card(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
                 _sectionTitle('App Preferences'),
                 Obx(
                   () => ListTile(
@@ -203,6 +177,32 @@ class SettingsView extends GetView<SettingsController> {
                             .toList(),
                       ),
                     ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _sectionTitle('Security'),
+                Obx(
+                  () => SwitchListTile(
+                    title: const Text('Enable Biometric Lock'),
+                    subtitle: const Text(
+                      'Require fingerprint or face ID to access your private vault.',
+                    ),
+                    value: controller.isBiometricEnabled.value,
+                    onChanged: controller.toggleBiometric,
+                    secondary: Icon(
+                      Icons.fingerprint,
+                      color: controller.isBiometricEnabled.value
+                          ? Colors.deepPurpleAccent
+                          : Colors.grey,
+                    ),
+                    activeThumbColor: Colors.deepPurpleAccent,
                   ),
                 ),
               ],

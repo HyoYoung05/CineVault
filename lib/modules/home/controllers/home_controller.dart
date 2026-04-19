@@ -12,6 +12,7 @@ enum HomeMediaFilter { all, movies, series }
 
 class HomeController extends GetxController {
   static const int _initialPageCount = 2;
+  static const int visiblePageButtonCount = 5;
 
   final selectedCategory = HomeCategory.trending.obs;
   final selectedMediaFilter = HomeMediaFilter.all.obs;
@@ -25,6 +26,7 @@ class HomeController extends GetxController {
   final hasMoreContent = true.obs;
   final contentItems = <dynamic>[].obs;
   final currentPage = 0.obs;
+  final currentDisplayPage = 1.obs;
 
   bool get isGenreBrowserMode =>
       selectedCategory.value == HomeCategory.genre &&
@@ -104,6 +106,7 @@ class HomeController extends GetxController {
     selectedMediaFilter.value = mediaFilter ?? HomeMediaFilter.all;
     selectedGenreId.value = null;
     selectedGenreLabel.value = null;
+    currentDisplayPage.value = 1;
 
     if (category != HomeCategory.random) {
       randomMediaTab.value = null;
@@ -129,6 +132,7 @@ class HomeController extends GetxController {
     selectedMediaFilter.value = mediaFilter;
     selectedGenreId.value = genreId;
     selectedGenreLabel.value = genreLabel;
+    currentDisplayPage.value = 1;
     getContent();
   }
 
@@ -143,6 +147,7 @@ class HomeController extends GetxController {
     randomGenreLabel.value = genreLabel;
     selectedGenreId.value = null;
     selectedGenreLabel.value = null;
+    currentDisplayPage.value = 1;
     getContent();
   }
 
@@ -151,6 +156,7 @@ class HomeController extends GetxController {
       isLoading(true);
       hasMoreContent.value = true;
       currentPage.value = 0;
+      currentDisplayPage.value = 1;
 
       final items = <dynamic>[];
       for (var page = 1; page <= _initialPageCount; page++) {
@@ -202,6 +208,81 @@ class HomeController extends GetxController {
     } finally {
       isLoadingMore(false);
     }
+  }
+
+  int totalLoadedDisplayPages(int itemsPerPage) {
+    if (contentItems.isEmpty) {
+      return 1;
+    }
+
+    return (contentItems.length / itemsPerPage).ceil();
+  }
+
+  List<dynamic> displayItems(int itemsPerPage) {
+    final start = (currentDisplayPage.value - 1) * itemsPerPage;
+    if (start >= contentItems.length) {
+      return [];
+    }
+
+    final end = (start + itemsPerPage).clamp(0, contentItems.length);
+    return contentItems.sublist(start, end);
+  }
+
+  bool get hasPreviousDisplayPage => currentDisplayPage.value > 1;
+
+  Future<void> goToPreviousDisplayPage() async {
+    if (!hasPreviousDisplayPage) return;
+    currentDisplayPage.value -= 1;
+  }
+
+  Future<void> goToNextDisplayPage(int itemsPerPage) async {
+    await goToDisplayPage(currentDisplayPage.value + 1, itemsPerPage);
+  }
+
+  Future<void> goToDisplayPage(int page, int itemsPerPage) async {
+    if (page < 1) return;
+
+    await _ensureItemsForDisplayPage(_visibleWindowEndPage(page), itemsPerPage);
+    final maxPage = totalLoadedDisplayPages(itemsPerPage);
+    if (page <= maxPage) {
+      currentDisplayPage.value = page;
+    }
+  }
+
+  Future<void> _ensureItemsForDisplayPage(int page, int itemsPerPage) async {
+    while (hasMoreContent.value && contentItems.length < page * itemsPerPage) {
+      await loadMoreContent();
+      if (isLoadingMore.value) {
+        break;
+      }
+    }
+  }
+
+  int _visibleWindowEndPage(int page) {
+    final step = visiblePageButtonCount - 1;
+    final start = (((page - 1) ~/ step) * step) + 1;
+    return start + visiblePageButtonCount - 1;
+  }
+
+  List<int> visiblePageNumbers(int itemsPerPage) {
+    final totalPages = totalLoadedDisplayPages(itemsPerPage);
+    final current = currentDisplayPage.value;
+    final window = visiblePageButtonCount;
+    final step = window - 1;
+
+    if (totalPages <= window) {
+      return List<int>.generate(totalPages, (index) => index + 1);
+    }
+
+    var start = (((current - 1) ~/ step) * step) + 1;
+    var end = start + window - 1;
+
+    if (end > totalPages) {
+      end = totalPages;
+      start = totalPages - window + 1;
+    }
+
+    return List<int>.generate(end - start + 1, (index) => start + index);
   }
 
   Future<List<dynamic>> _loadSelectedContent({int page = 1}) async {

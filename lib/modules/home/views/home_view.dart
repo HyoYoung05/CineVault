@@ -529,6 +529,9 @@ class HomeView extends GetView<HomeController> {
         ),
       ),
       body: Obx(() {
+        final width = MediaQuery.of(context).size.width;
+        final itemsPerPage = width >= 900 ? 16 : 12;
+
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -578,6 +581,12 @@ class HomeView extends GetView<HomeController> {
           );
         }
 
+        final visibleItems = controller.displayItems(itemsPerPage);
+        final pageNumbers = controller.visiblePageNumbers(itemsPerPage);
+        final showPagination =
+            controller.totalLoadedDisplayPages(itemsPerPage) > 1 ||
+            controller.hasMoreContent.value;
+
         return CustomScrollView(
           slivers: [
             SliverPadding(
@@ -591,7 +600,7 @@ class HomeView extends GetView<HomeController> {
                 ),
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    final media = _normalizeMediaItem(controller.contentItems[index]);
+                    final media = _normalizeMediaItem(visibleItems[index]);
                     final String? path = media['poster_path'];
                     final bool hasImage = path != null && path.isNotEmpty;
                     final String posterUrl = hasImage
@@ -618,27 +627,86 @@ class HomeView extends GetView<HomeController> {
                       ),
                     );
                   },
-                  childCount: controller.contentItems.length,
+                  childCount: visibleItems.length,
                 ),
               ),
             ),
-            if (controller.hasMoreContent.value)
+            if (showPagination)
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: controller.isLoadingMore.value
-                          ? null
-                          : controller.loadMoreContent,
-                      child: controller.isLoadingMore.value
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text('Load More'),
+                  child: Center(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return SizedBox(
+                          width: constraints.maxWidth,
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.center,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  OutlinedButton(
+                                    onPressed: controller.hasPreviousDisplayPage
+                                        ? controller.goToPreviousDisplayPage
+                                        : null,
+                                    style: OutlinedButton.styleFrom(
+                                      minimumSize: const Size(72, 40),
+                                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                                    ),
+                                    child: const Text('Previous'),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  for (var i = 0; i < pageNumbers.length; i++) ...[
+                                    FilledButton.tonal(
+                                      onPressed:
+                                          controller.currentDisplayPage.value == pageNumbers[i]
+                                              ? null
+                                              : () => controller.goToDisplayPage(
+                                                    pageNumbers[i],
+                                                    itemsPerPage,
+                                                  ),
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor:
+                                            controller.currentDisplayPage.value == pageNumbers[i]
+                                                ? Theme.of(context).colorScheme.primary
+                                                : null,
+                                        foregroundColor:
+                                            controller.currentDisplayPage.value == pageNumbers[i]
+                                                ? Colors.white
+                                                : null,
+                                        minimumSize: const Size(40, 40),
+                                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                                      ),
+                                      child: Text('${pageNumbers[i]}'),
+                                    ),
+                                    if (i != pageNumbers.length - 1) const SizedBox(width: 8),
+                                  ],
+                                  const SizedBox(width: 8),
+                                  OutlinedButton(
+                                    onPressed: controller.isLoadingMore.value
+                                        ? null
+                                        : () => controller.goToNextDisplayPage(itemsPerPage),
+                                    style: OutlinedButton.styleFrom(
+                                      minimumSize: const Size(72, 40),
+                                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                                    ),
+                                    child: controller.isLoadingMore.value
+                                        ? const SizedBox(
+                                            width: 18,
+                                            height: 18,
+                                            child: CircularProgressIndicator(strokeWidth: 2),
+                                          )
+                                        : const Text('Next'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
