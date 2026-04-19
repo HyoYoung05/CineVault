@@ -5,16 +5,19 @@ class ApiProvider {
   // A generic GET request method to reduce code duplication
   static Future<Map<String, dynamic>> getRequest(String endpoint) async {
     try {
-      if (ApiConstants.apiKey.isEmpty) {
+      final apiKey = ApiConstants.apiKey.trim();
+      const placeholderKeys = {'YOUR_API_KEY', 'YOUR_API_KEY_HERE'};
+
+      if (apiKey.isEmpty || placeholderKeys.contains(apiKey)) {
         throw Exception(
-          'Missing TMDB_API_KEY. Run the app with '
-          '--dart-define=TMDB_API_KEY=your_key_here',
+          'Missing TMDb API key. Add your real key in '
+          'lib/app/constants/api_constants.dart before running the app.',
         );
       }
 
       final response = await http.get(
         Uri.parse(
-          '${ApiConstants.baseUrl}$endpoint&api_key=${ApiConstants.apiKey}',
+          '${ApiConstants.baseUrl}$endpoint&api_key=$apiKey',
         ),
       );
 

@@ -88,7 +88,11 @@ class WatchlistView extends GetView<WatchlistController> {
             if (controller.isSelectionMode) {
               controller.clearSelection();
             } else {
-              Navigator.of(context).pop();
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              } else {
+                Get.offAllNamed(Routes.DASHBOARD);
+              }
             }
           },
         ),

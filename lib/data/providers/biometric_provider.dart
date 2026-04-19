@@ -5,12 +5,15 @@ class BiometricProvider {
 
   Future<bool> authenticate() async {
     try {
-      final bool canAuthenticateWithBiometrics = await _auth.canCheckBiometrics;
-      if (!canAuthenticateWithBiometrics) return false;
+      final bool canAuthenticate = await _auth.canCheckBiometrics || await _auth.isDeviceSupported();
+      if (!canAuthenticate) return false;
 
       return await _auth.authenticate(
         localizedReason: 'Please authenticate to access CineVault',
-        options: const AuthenticationOptions(biometricOnly: true, stickyAuth: true),
+        options: const AuthenticationOptions(
+          biometricOnly: false,
+          stickyAuth: true,
+        ),
       );
     } catch (e) {
       return false;

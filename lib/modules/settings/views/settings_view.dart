@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../app/routes/app_routes.dart';
 import '../controllers/settings_controller.dart';
 import '../../../widgets/responsive_app_bar_title.dart';
 
@@ -19,11 +20,69 @@ class SettingsView extends GetView<SettingsController> {
     );
   }
 
+  Widget _preferenceTile<T>({
+    required IconData icon,
+    required String title,
+    required T value,
+    required List<DropdownMenuItem<T>> items,
+    required ValueChanged<T?> onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Icon(icon),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                DropdownButtonHideUnderline(
+                  child: ButtonTheme(
+                    alignedDropdown: true,
+                    child: DropdownButton<T>(
+                      isExpanded: true,
+                      value: value,
+                      onChanged: onChanged,
+                      items: items,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const ResponsiveAppBarTitle('Settings'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              Get.offAllNamed(Routes.DASHBOARD);
+            }
+          },
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
@@ -57,126 +116,93 @@ class SettingsView extends GetView<SettingsController> {
               children: [
                 _sectionTitle('App Preferences'),
                 Obx(
-                  () => ListTile(
-                    leading: const Icon(Icons.sort_outlined),
-                    title: const Text('Sort Vault By'),
-                    subtitle: Text(controller.vaultSortLabel(controller.vaultSort.value)),
-                    trailing: DropdownButtonHideUnderline(
-                      child: DropdownButton<VaultSortPreference>(
-                        value: controller.vaultSort.value,
-                        onChanged: (value) {
-                          if (value != null) controller.setVaultSort(value);
-                        },
-                        items: VaultSortPreference.values
-                            .map(
-                              (value) => DropdownMenuItem(
-                                value: value,
-                                child: Text(controller.vaultSortLabel(value)),
-                              ),
-                            )
-                            .toList(),
-                      ),
-                    ),
+                  () => _preferenceTile<VaultSortPreference>(
+                    icon: Icons.sort_outlined,
+                    title: 'Sort Vault By',
+                    value: controller.vaultSort.value,
+                    onChanged: (value) {
+                      if (value != null) controller.setVaultSort(value);
+                    },
+                    items: VaultSortPreference.values
+                        .map(
+                          (value) => DropdownMenuItem(
+                            value: value,
+                            child: Text(controller.vaultSortLabel(value)),
+                          ),
+                        )
+                        .toList(),
                   ),
                 ),
                 Obx(
-                  () => ListTile(
-                    leading: const Icon(Icons.home_outlined),
-                    title: const Text('Default Home Section'),
-                    subtitle: Text(
-                      controller.defaultHomeSectionLabel(controller.defaultHomeSection.value),
-                    ),
-                    trailing: DropdownButtonHideUnderline(
-                      child: DropdownButton<DefaultHomeSectionPreference>(
-                        value: controller.defaultHomeSection.value,
-                        onChanged: (value) {
-                          if (value != null) controller.setDefaultHomeSection(value);
-                        },
-                        items: DefaultHomeSectionPreference.values
-                            .map(
-                              (value) => DropdownMenuItem(
-                                value: value,
-                                child: Text(controller.defaultHomeSectionLabel(value)),
-                              ),
-                            )
-                            .toList(),
-                      ),
-                    ),
+                  () => _preferenceTile<DefaultHomeSectionPreference>(
+                    icon: Icons.home_outlined,
+                    title: 'Default Home Section',
+                    value: controller.defaultHomeSection.value,
+                    onChanged: (value) {
+                      if (value != null) controller.setDefaultHomeSection(value);
+                    },
+                    items: DefaultHomeSectionPreference.values
+                        .map(
+                          (value) => DropdownMenuItem(
+                            value: value,
+                            child: Text(controller.defaultHomeSectionLabel(value)),
+                          ),
+                        )
+                        .toList(),
                   ),
                 ),
                 Obx(
-                  () => ListTile(
-                    leading: const Icon(Icons.live_tv_outlined),
-                    title: const Text('Preferred Content Type'),
-                    subtitle: Text(
-                      controller.preferredContentTypeLabel(controller.preferredContentType.value),
-                    ),
-                    trailing: DropdownButtonHideUnderline(
-                      child: DropdownButton<PreferredContentTypePreference>(
-                        value: controller.preferredContentType.value,
-                        onChanged: (value) {
-                          if (value != null) controller.setPreferredContentType(value);
-                        },
-                        items: PreferredContentTypePreference.values
-                            .map(
-                              (value) => DropdownMenuItem(
-                                value: value,
-                                child: Text(controller.preferredContentTypeLabel(value)),
-                              ),
-                            )
-                            .toList(),
-                      ),
-                    ),
+                  () => _preferenceTile<PreferredContentTypePreference>(
+                    icon: Icons.live_tv_outlined,
+                    title: 'Preferred Content Type',
+                    value: controller.preferredContentType.value,
+                    onChanged: (value) {
+                      if (value != null) controller.setPreferredContentType(value);
+                    },
+                    items: PreferredContentTypePreference.values
+                        .map(
+                          (value) => DropdownMenuItem(
+                            value: value,
+                            child: Text(controller.preferredContentTypeLabel(value)),
+                          ),
+                        )
+                        .toList(),
                   ),
                 ),
                 Obx(
-                  () => ListTile(
-                    leading: const Icon(Icons.palette_outlined),
-                    title: const Text('Theme Appearance'),
-                    subtitle: Text(
-                      controller.themeAppearanceLabel(controller.themeAppearance.value),
-                    ),
-                    trailing: DropdownButtonHideUnderline(
-                      child: DropdownButton<ThemeAppearancePreference>(
-                        value: controller.themeAppearance.value,
-                        onChanged: (value) {
-                          if (value != null) controller.setThemeAppearance(value);
-                        },
-                        items: ThemeAppearancePreference.values
-                            .map(
-                              (value) => DropdownMenuItem(
-                                value: value,
-                                child: Text(controller.themeAppearanceLabel(value)),
-                              ),
-                            )
-                            .toList(),
-                      ),
-                    ),
+                  () => _preferenceTile<ThemeAppearancePreference>(
+                    icon: Icons.palette_outlined,
+                    title: 'Theme Appearance',
+                    value: controller.themeAppearance.value,
+                    onChanged: (value) {
+                      if (value != null) controller.setThemeAppearance(value);
+                    },
+                    items: ThemeAppearancePreference.values
+                        .map(
+                          (value) => DropdownMenuItem(
+                            value: value,
+                            child: Text(controller.themeAppearanceLabel(value)),
+                          ),
+                        )
+                        .toList(),
                   ),
                 ),
                 Obx(
-                  () => ListTile(
-                    leading: const Icon(Icons.rocket_launch_outlined),
-                    title: const Text('Default Startup Screen'),
-                    subtitle: Text(
-                      controller.defaultStartupScreenLabel(controller.defaultStartupScreen.value),
-                    ),
-                    trailing: DropdownButtonHideUnderline(
-                      child: DropdownButton<DefaultStartupScreenPreference>(
-                        value: controller.defaultStartupScreen.value,
-                        onChanged: (value) {
-                          if (value != null) controller.setDefaultStartupScreen(value);
-                        },
-                        items: DefaultStartupScreenPreference.values
-                            .map(
-                              (value) => DropdownMenuItem(
-                                value: value,
-                                child: Text(controller.defaultStartupScreenLabel(value)),
-                              ),
-                            )
-                            .toList(),
-                      ),
-                    ),
+                  () => _preferenceTile<DefaultStartupScreenPreference>(
+                    icon: Icons.rocket_launch_outlined,
+                    title: 'Default Startup Screen',
+                    value: controller.defaultStartupScreen.value,
+                    onChanged: (value) {
+                      if (value != null) controller.setDefaultStartupScreen(value);
+                    },
+                    items: DefaultStartupScreenPreference.values
+                        .map(
+                          (value) => DropdownMenuItem(
+                            value: value,
+                            child: Text(controller.defaultStartupScreenLabel(value)),
+                          ),
+                        )
+                        .toList(),
                   ),
                 ),
               ],
@@ -191,7 +217,7 @@ class SettingsView extends GetView<SettingsController> {
                 Obx(
                   () => SwitchListTile(
                     title: const Text('Enable Biometric Lock'),
-                    subtitle: const Text(
+                          subtitle: const Text(
                       'Require fingerprint or face ID to access your private vault.',
                     ),
                     value: controller.isBiometricEnabled.value,
@@ -224,6 +250,17 @@ class SettingsView extends GetView<SettingsController> {
               ],
             ),
           ),
+          const SizedBox(height: 20),
+          const Center(
+            child: Text(
+              'Version 2.2',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 13,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
         ],
       ),
     );

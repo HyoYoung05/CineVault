@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../../app/constants/app_constants.dart';
@@ -18,11 +19,25 @@ class SplashController extends GetxController {
       AppConstants.defaultStartupScreenKey,
       defaultValue: 'home',
     ) as String;
+    final biometricEnabled = settingsBox.get(
+      AppConstants.biometricEnabledKey,
+      defaultValue: false,
+    ) as bool;
 
     if (startupScreen == 'vault') {
-      Get.offNamed(Routes.WATCHLIST, arguments: {'mode': 'vault'});
+      if (biometricEnabled && !kIsWeb) {
+        Get.offAllNamed(
+          Routes.LOCK,
+          arguments: {
+            'route': Routes.WATCHLIST,
+            'arguments': {'mode': 'vault'},
+          },
+        );
+      } else {
+        Get.offAllNamed(Routes.WATCHLIST, arguments: {'mode': 'vault'});
+      }
     } else {
-      Get.offNamed(Routes.DASHBOARD);
+      Get.offAllNamed(Routes.DASHBOARD);
     }
   }
 }
